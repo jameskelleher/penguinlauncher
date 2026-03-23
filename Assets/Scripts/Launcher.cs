@@ -14,8 +14,8 @@ public class Launcher : MonoBehaviour
     public InputMode inputMode;
 
     private Rigidbody2D rb;
-    private float touchStartY;
-    private float maxTouchInputY;
+    private float dragStartY;
+    private float dragRange;
 
     void Start()
     {
@@ -26,19 +26,26 @@ public class Launcher : MonoBehaviour
 
         rb = GetComponent<Rigidbody2D>();
 
-        maxTouchInputY = Screen.height * 0.95f;
-        touchStartY = maxTouchInputY;
+        float worldUnitsInPixels = Screen.height / (Camera.main.orthographicSize * 2);
+        float heightRange = maxHeight - minHeight;
+        dragRange = heightRange * worldUnitsInPixels;
+
+        dragStartY = Screen.height;
     }
 
     void Update()
     {
-        if (inputMode == InputMode.Touch &&
-            Touchscreen.current != null &&
-            Touchscreen.current.primaryTouch.press.wasPressedThisFrame)
+        bool pressedThisFrame =
+            (inputMode == InputMode.Mouse && Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame) ||
+            (inputMode == InputMode.Touch && Touchscreen.current != null && Touchscreen.current.primaryTouch.press.wasPressedThisFrame);
+
+        if (pressedThisFrame)
         {
             float deadZone = Screen.height * 0.05f;
-            touchStartY = Touchscreen.current.primaryTouch.position.ReadValue().y + deadZone;
-            touchStartY = Mathf.Min(touchStartY, maxTouchInputY);
+            float pressY = inputMode == InputMode.Mouse
+                ? Mouse.current.position.ReadValue().y
+                : Touchscreen.current.primaryTouch.position.ReadValue().y;
+            dragStartY = pressY + deadZone;
         }
     }
 
@@ -55,21 +62,23 @@ public class Launcher : MonoBehaviour
                 result = Mathf.Lerp(minHeight, maxHeight, normalizedInput);
                 break;
             case InputMode.Mouse:
-                result = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue()).y;
-                break;
             case InputMode.Touch:
             default:
-                if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.isPressed)
-                {
+                bool isPressed =
+                    (inputMode == InputMode.Mouse && Mouse.current != null && Mouse.current.leftButton.isPressed) ||
+                    (inputMode == InputMode.Touch && Touchscreen.current != null && Touchscreen.current.primaryTouch.press.isPressed);
 
-                    float screenY = Touchscreen.current.primaryTouch.position.ReadValue().y;
-                    float normalizedY = Mathf.InverseLerp(touchStartY, maxTouchInputY, screenY);
-                    Debug.Log(normalizedY);
+                if (isPressed)
+                {
+                    float screenY = inputMode == InputMode.Mouse
+                        ? Mouse.current.position.ReadValue().y
+                        : Touchscreen.current.primaryTouch.position.ReadValue().y;
+                    float normalizedY = Mathf.InverseLerp(dragStartY, dragStartY + dragRange, screenY);
                     result = Mathf.Lerp(minHeight, maxHeight, normalizedY);
                 }
                 else
                 {
-                    touchStartY = maxTouchInputY;
+                    dragStartY = Screen.height;
                     result = minHeight;
                 }
                 break;

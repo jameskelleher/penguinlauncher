@@ -16,16 +16,17 @@ public class Tutorial : MonoBehaviour
 
     void Start()
     {
-        if (Application.isMobilePlatform)
-        {
-            tapToStartUI.SetActive(true);
-            Time.timeScale = 0;
-        }
-        else
-        {
-            tapToStartUI.SetActive(false);
-            readyForMobile = true;
-        }
+        // if (Application.isMobilePlatform)
+        // {
+        //     tapToStartUI.SetActive(true);
+        //     Time.timeScale = 0;
+        // }
+        // else
+        // {
+        //     tapToStartUI.SetActive(false);
+        //     readyForMobile = true;
+        // }
+        readyForMobile = true;
     }
 
     void Update()
@@ -34,7 +35,7 @@ public class Tutorial : MonoBehaviour
                 Touchscreen.current != null &&
                 Touchscreen.current.primaryTouch.press.wasPressedThisFrame)
         {
-            Screen.fullScreen = true;
+            // Screen.fullScreen = true;
             readyForMobile = true;
             Time.timeScale = 1;
             tapToStartUI.SetActive(false);
