@@ -16,17 +16,16 @@ public class Tutorial : MonoBehaviour
 
     void Start()
     {
-        // if (Application.isMobilePlatform)
-        // {
-        //     tapToStartUI.SetActive(true);
-        //     Time.timeScale = 0;
-        // }
-        // else
-        // {
-        //     tapToStartUI.SetActive(false);
-        //     readyForMobile = true;
-        // }
-        readyForMobile = true;
+        if (Application.isMobilePlatform)
+        {
+            tapToStartUI.SetActive(true);
+            Time.timeScale = 0;
+        }
+        else
+        {
+            tapToStartUI.SetActive(false);
+            readyForMobile = true;
+        }
     }
 
     void Update()
