@@ -45,7 +45,7 @@ public class Tutorial : MonoBehaviour
     {
         GetComponent<Collider2D>().enabled = false;
         GetComponent<SpriteRenderer>().enabled = false;
-        startText.color = Color.green;
+        startText.color = Color.red;
         GameObject explosionInstance = Instantiate(explosion, transform.position, Quaternion.identity);
         Destroy(explosionInstance, 2.0f);
         SoundManager.PlaySound(SoundType.EXPLOSION, volume: 1f);

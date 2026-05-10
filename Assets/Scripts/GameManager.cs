@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using SmallHedge.SoundManager;
 using TMPro;
 using UnityEngine;
@@ -15,6 +14,9 @@ public class GameManager : MonoBehaviour
     public GameObject penguinPrefab;
     public GameObject spawnPoint;
     public float penguinSpeed = 10.0f;
+    public GameObject bigPenguinPrefab;
+    public GameObject bigPenSpawnPoint;
+    public float bigPenSpeed;
 
     [Header("Star Penguins")]
     public GameObject starPenguin;
@@ -34,7 +36,7 @@ public class GameManager : MonoBehaviour
         SetNumPenguinsText();
         ResetResultCounts();
         resultsText.enabled = false;
-        leftToDestroy = numPenguins;
+        leftToDestroy = numPenguins - 1;
     }
 
 
@@ -56,7 +58,8 @@ public class GameManager : MonoBehaviour
         try
         {
             currentSpawnData = spawnDataQueue.Dequeue();
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             if (e is InvalidOperationException)
             {
@@ -71,7 +74,7 @@ public class GameManager : MonoBehaviour
         int intervalIx = -1;  // init to -1 bc we increment before first use
         float[] spawnIntervals = currentSpawnData.spawnIntervals;
 
-        while (numPenguins > 0)
+        while (numPenguins > 1)
         {
             if (numPenguins == nextUpdateAt)
             {
@@ -116,7 +119,7 @@ public class GameManager : MonoBehaviour
 
     void UpdateNumPenguins()
     {
-        numPenguins -= 1;
+        numPenguins--;
         SetNumPenguinsText();
     }
 
@@ -134,16 +137,16 @@ public class GameManager : MonoBehaviour
 
     public void CountResult(ResultType result)
     {
+        Debug.Log($"Counting results {result}");
         resultCounts[result] += 1;
     }
 
     public void CheckIfEnded(float extraDelay = 0f)
     {
         leftToDestroy -= 1;
+        Debug.Log(leftToDestroy);
         if (leftToDestroy == 0)
-        {
-            StartCoroutine(ShowResults(extraDelay));
-        }
+            StartCoroutine(SpawnBigPenguin());
     }
 
     void ResetResultCounts()
@@ -152,7 +155,18 @@ public class GameManager : MonoBehaviour
             resultCounts[result] = 0;
     }
 
-    IEnumerator ShowResults(float extraDelay)
+    IEnumerator SpawnBigPenguin()
+    {
+        Debug.Log("big spawn");
+        yield return new WaitForSeconds(3f);
+        GameObject bigPenguin = Instantiate(bigPenguinPrefab, bigPenSpawnPoint.transform.position, Quaternion.identity);
+        bigPenguin.GetComponent<Rigidbody2D>().linearVelocityX = bigPenSpeed;
+        bigPenguin.GetComponent<BigPenguin>().gameManager = GetComponent<GameManager>();
+        bigPenguin.GetComponent<BigPenguin>().onDestroy.AddListener(() => StartCoroutine(ShowResults()));
+        UpdateNumPenguins();
+    }
+
+    IEnumerator ShowResults(float extraDelay = 0f)
     {
         yield return new WaitForSeconds(3.0f + extraDelay);
 
@@ -164,12 +178,12 @@ public class GameManager : MonoBehaviour
 
         resultsText.text = "";
 
-        yield return UpdateResults(1.5f, "THERE IS NO SCORE\n");
+        yield return UpdateResults(1.5f, "NO SCORE\n");
         yield return UpdateResults(2.5f, "ONLY RESULTS\n\n");
         yield return UpdateResults(1.0f, $"RAPTURED: {resultCounts[ResultType.RAPTURE]}\n");
         yield return UpdateResults(1.0f, $"OBLITERATED: {resultCounts[ResultType.EXPLODE]}\n");
         yield return UpdateResults(1.0f, $"STELLA NOVIS: {resultCounts[ResultType.STAR]}\n");
-        yield return UpdateResults(15.0f , $"PRIMORDIAL RETURN: {resultCounts[ResultType.UNDERWATER]}");
+        yield return UpdateResults(15.0f, $"PRIMORDIAL RETURN: {resultCounts[ResultType.UNDERWATER]}");
         SceneManager.LoadScene("Intro");
     }
 

@@ -9,7 +9,8 @@ public class Launcher : MonoBehaviour
     public float minHeight = -3.0f;
     public float maxHeight = 3.0f;
 
-    public float inputHigh = -0.8f;
+    public float inputMin = -1.0f;
+    public float inputMax = -0.8f;
 
     public InputMode inputMode;
 
@@ -58,7 +59,7 @@ public class Launcher : MonoBehaviour
         {
             case InputMode.Controller:
                 float input = this.input.ReadValue<float>();
-                normalizedInput = Mathf.InverseLerp(-1.0f, inputHigh, input);
+                normalizedInput = Mathf.InverseLerp(inputMin, inputMax, input);
                 result = Mathf.Lerp(minHeight, maxHeight, normalizedInput);
                 break;
             case InputMode.Mouse:
